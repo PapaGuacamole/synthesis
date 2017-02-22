@@ -281,13 +281,29 @@ end</script>
             <packageName></packageName>
             <regex>^enext$</regex>
         </Alias>
+        <Alias isActive="yes" isFolder="no">
+            <name>Load syn.ref.shops</name>
+            <script>syn.f.load()</script>
+            <command></command>
+            <packageName></packageName>
+            <regex>^eload$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+            <name>Save syn.ref.shops</name>
+            <script>syn.f.save()
+</script>
+            <command></command>
+            <packageName></packageName>
+            <regex>^esave$</regex>
+        </Alias>
     </AliasPackage>
     <ActionPackage/>
     <ScriptPackage>
         <Script isActive="yes" isFolder="no">
             <name>Synthesis</name>
             <packageName></packageName>
-            <script>syn							= syn or {}
+            <script>-- SYNTHESIS
+syn							= syn or {}
 syn.extracted			= syn.extracted or {}
 syn.f						= syn.f or {}
 syn.v						= syn.v or {}
@@ -317,6 +333,11 @@ syn.ref = {
 		[&quot;salt crystals&quot;] = &quot;salt&quot;,
 		[&quot;drams of mercury&quot;] = &quot;mercury&quot;,
 	},
+
+	shops = syn.ref.shops or {
+		-- contains room ids of known shops in otherwise extractable environments
+		-- loaded using syn.f.load()
+	},
 }
 
 if gmcp then if gmcp.Room then
@@ -341,9 +362,16 @@ syn.f.displayLinks = function()
 
 	local primes = {&quot;sulphur&quot;,&quot;salt&quot;,&quot;mercury&quot;}
 
-	if table.contains(syn.ref.environments, env) and not table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then
-		if not table.contains(syn.extracted,room) then
-			syn.extracted[room] = {0,0,0}
+	if table.contains(syn.ref.environments, env) then
+		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then
+			syn.f.echo(&quot;Shop, can't extract - added to shoplist&quot;)
+			if not table.contains(syn.ref.shops,room) then
+				table.insert(syn.ref.shops,room)
+				table.sort(syn.ref.shops)
+				syn.f.save()
+			end
+		elseif not table.contains(syn.extracted,room) then
+			syn.extracted[room] = {0,0,0, syn.area}
 		end
 
 		cecho(&quot;\n&lt;dark_khaki&gt;Primes: &quot;)
@@ -362,6 +390,8 @@ end
 syn.f.isextractable = function(room)
 
 	room = room or gmcp.Room.Info.num
+
+	if table.contains(syn.ref.shops,room) then return false end
 
 	if not table.contains(syn.ref.environments, mmp.envidsr[getRoomEnv(room)]) then return false end
 
@@ -407,6 +437,7 @@ end
 -- SURVEYING AND WALKING
 syn.f.survey = function(room)
 
+	if #syn.ref.shops == 0 then syn.f.load() end
 	room = room or gmcp.Room.Info.num
 	syn.rooms = {}
 	syn.area = mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
@@ -491,15 +522,22 @@ syn.f.enteredroom = function() -- remove rooms as they're passed through, don't 
 	if TReX then if TReX.queue.dorAction then return end end
 
 	if syn.f.isextractable(room) then
-		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here
+		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here, mark as extracted
+			syn.f.echo(&quot;Shop, can't extract - added to shoplist&quot;)
+			if not table.contains(syn.ref.shops,room) then
+				table.insert(syn.ref.shops,room)
+				table.sort(syn.ref.shops)
+				syn.f.save()
+			end
 			if table.contains(syn.rooms,room) then table.remove(syn.rooms,table.index_of(syn.rooms,room)) end
+			
 		else
 			mmp.stop()
-			if not table.contains(syn.extracted,room) then syn.extracted[room] = {0,0,0} end
+			if not table.contains(syn.extracted,room) then syn.extracted[room] = {0,0,0,syn.area} end
 			if tonumber(syn.extracted[room][1]) == 0 then table.insert(syn.q,&quot;extract sulphur&quot;..cc..&quot;inr sulphur&quot;) end
 			if tonumber(syn.extracted[room][2]) == 0 then table.insert(syn.q,&quot;extract salt&quot;..cc..&quot;inr salt&quot;) end
 	  		if tonumber(syn.extracted[room][3]) == 0 then table.insert(syn.q,&quot;extract mercury&quot;..cc..&quot;inr mercury&quot;) end
-			if svo then -- use svo's do queue
+			if svo then -- use svof's do queue
 				for _,v in ipairs(syn.q) do
 					svo.doadd(v)
 				end
@@ -514,6 +552,31 @@ end
 
 
 
+-- file load / save
+local _sep_ = &quot;/&quot;
+if string.char(getMudletHomeDir():byte()) == &quot;/&quot; then _sep_ = &quot;/&quot; else  _sep_ = &quot;\\&quot; end
+
+syn.f.save = function()
+
+	local tmp = table.deepcopy(syn.ref.shops)
+	table.save(getMudletHomeDir().._sep_..&quot;synshops.lua&quot;,tmp)
+	syn.f.echo(&quot;Shop table saved successfully&quot;)
+	
+end
+
+syn.f.load = function()
+
+	local tbl = getMudletHomeDir().._sep_..&quot;synshops.lua&quot;
+	if io.exists(tbl) then
+		local tmp = {}
+		table.load(tbl,tmp)
+		syn.ref.shops = table.deepcopy (tmp)
+		syn.f.echo(&quot;Shop table loaded successfully&quot;)
+	else
+		syn.f.echo(&quot;synshops.lua not found in profile folder&quot;)
+	end
+
+end
 
 
 registerAnonymousEventHandler(&quot;gmcp.Room.Info&quot;,&quot;syn.f.enteredroom&quot;)
@@ -550,6 +613,30 @@ syn.f.enqueue = function(num,metal)
 end
 
 --registerAnonymousEventHandler(&quot;gmcp.IRE.Rift&quot;, &quot;syn.f.listRift&quot;)</script>
+            <eventHandlerList/>
+        </Script>
+        <Script isActive="no" isFolder="no">
+            <name>Changelog</name>
+            <packageName></packageName>
+            <script>--[[ synthesis changelog
+
+v1.2
+- added in shop detection and marking to syn.f.enteredroom
+- syn.area added as fourth argument to syn.extracted[room] for statistic gathering
+- created syn.ref.shops to be populated with known shops
+- added syn.f.load and syn.f.save to allow syn.ref.shops to persist through sessions
+- syn.f.load() automatically called if syn.ref.shops is empty
+- syn.f.save() automatically called when a new entry is made to the table
+
+v1.1
+- rearranged scripts
+- removed syn.rw namespace
+- added check for gmcp and gmcp.Room before trying to populate syn.area
+
+v1.0
+- initial release
+
+]]--</script>
             <eventHandlerList/>
         </Script>
     </ScriptPackage>
