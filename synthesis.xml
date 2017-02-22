@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.0">
+    <TriggerPackage>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Extracted</name>
+            <script>local room = gmcp.Room.Info.num
+local mineral = syn.ref.shorten[matches[3]]
+
+if not syn.extracted[room] then
+	syn.extracted[room] = {0,0,0}
+end
+
+if mineral == &quot;sulphur&quot; then
+	syn.extracted[room][1] = matches[2]
+elseif mineral == &quot;salt&quot; then
+	syn.extracted[room][2] = matches[2]
+elseif mineral == &quot;mercury&quot; then
+	syn.extracted[room][3] = matches[2]
+end
+
+deleteFull()
+syn.f.echo(&quot;Extracted &quot;..matches[2]..&quot; &quot;..mineral)
+</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>^You kneel and collect chunks of earth\, using a strong\-smelling solvent to pull a group of (\d+) (.+) from the dirt and rock\. This delicate process completed\, you set the prime aside to dry\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>1</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Already extracted</name>
+            <script>local room = gmcp.Room.Info.num
+if not table.contains(syn.extracted, room) then
+	syn.extracted[room] = {0,0,0}
+end
+if matches[2] == &quot;sulphur&quot; then
+	syn.extracted[room][1] = 1
+elseif matches[2] == &quot;salt&quot; then
+	syn.extracted[room][2] = 1
+elseif matches[2] == &quot;mercury&quot; then
+	syn.extracted[room][3] = 1
+end
+	</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>^There is no (\w+) to be extracted here\.$</string>
+                <string>^You already have extracted (\w+) from this location\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>1</integer>
+                <integer>1</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Today</name>
+            <script>if syn.v.date ~= matches[2] then
+	syn.extracted = {}
+	syn.v.date = matches[2]
+end</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>^Today is the (\w+) of (.*), (.*) years after the fall of the Seleucarian Empire\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>1</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>New Day</name>
+            <script>syn.extracted = {}
+syn.v.date = matches[2]</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>^It is now the (\w+) of (\w+), (\w+) years after the fall of the Seleucarian Empire\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>1</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Room exits</name>
+            <script>syn.f.displayLinks()</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>^You see exits leading (.+) and (.+)\.$</string>
+                <string>^You see a single exit leading (.+)\.$</string>
+                <string>^There are no obvious exits\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>1</integer>
+                <integer>1</integer>
+                <integer>1</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Extracted Sulphur</name>
+            <script>local room = gmcp.Room.Info.num
+local mineral = &quot;sulphur&quot;
+
+if not syn.extracted[room] then
+	syn.extracted[room] = {0,0,0}
+end
+
+syn.extracted[room][1] = 1
+
+deleteFull()
+syn.f.echo(&quot;Extracted 1 &quot;..mineral)</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>You kneel and collect chunks of earth, using a strong-smelling solvent to pull a pinch of powdered sulphur from the dirt and rock. This delicate process completed, you set the prime aside to dry.</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>3</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Extracted Salt</name>
+            <script>local room = gmcp.Room.Info.num
+local mineral = &quot;salt&quot;
+
+if not syn.extracted[room] then
+	syn.extracted[room] = {0,0,0}
+end
+
+syn.extracted[room][2] = 1
+
+deleteFull()
+syn.f.echo(&quot;Extracted 1 &quot;..mineral)
+</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>You kneel and collect chunks of earth, using a strong-smelling solvent to pull a salt crystal from the dirt and rock. This delicate process completed, you set the prime aside to dry.</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>3</integer>
+            </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Extracted Mercury</name>
+            <script>local room = gmcp.Room.Info.num
+local mineral = &quot;mercury&quot;
+
+if not syn.extracted[room] then
+	syn.extracted[room] = {0,0,0}
+end
+
+syn.extracted[room][3] = 1
+
+deleteFull()
+syn.f.echo(&quot;Extracted 1 &quot;..mineral)
+</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+                <string>You kneel and collect chunks of earth, using a strong-smelling solvent to pull a dram of mercury from the dirt and rock. This delicate process completed, you set the prime aside to dry.</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+                <integer>3</integer>
+            </regexCodePropertyList>
+        </Trigger>
+    </TriggerPackage>
+    <TimerPackage/>
+    <AliasPackage>
+        <Alias isActive="yes" isFolder="no">
+            <name>Toggle extractions</name>
+            <script>local x = matches[2] or &quot;unknown&quot;
+if x == &quot;on&quot; then
+	syn.v.extract = true
+elseif x == &quot;off&quot; then
+	syn.v.extract = false
+else
+	syn.v.extract = not syn.v.extract
+end
+
+if not syn.v.extract then syn.rw.stop() else syn.rw.extracting = true end
+syn.f.echo(&quot;enabled &quot;..string.format(&quot;%s&quot;, tostring(syn.v.extract)))
+raiseEvent(&quot;guac extract toggle&quot;)</script>
+            <command></command>
+            <packageName></packageName>
+            <regex>^extract ?(on|off)?$$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+            <name>RW Stop</name>
+            <script>syn.rw.stop()</script>
+            <command></command>
+            <packageName></packageName>
+            <regex>^estop$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+            <name>Extract survey</name>
+            <script>syn.rw.survey()</script>
+            <command></command>
+            <packageName></packageName>
+            <regex>^esurvey$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+            <name>Goto next extractable room</name>
+            <script>syn.rw.survey()
+if not syn.rooms[1] then
+	syn.f.echo(&quot;No extractable rooms found&quot;)
+else
+	mmp.gotoRoom(syn.rw.nearest())
+end</script>
+            <command></command>
+            <packageName></packageName>
+            <regex>^enext$</regex>
+        </Alias>
+    </AliasPackage>
+    <ActionPackage/>
+    <ScriptPackage>
+        <Script isActive="yes" isFolder="no">
+            <name>Synthesis</name>
+            <packageName></packageName>
+            <script>syn							= syn or {}
+syn.extracted			= syn.extracted or {}
+syn.f						= syn.f or {}
+syn.v						= syn.v or {}
+syn.q						= syn.q or {}
+
+kln = kln or {}
+
+syn.version = &quot;v1.1&quot;
+
+local cc = kln.cc or &quot;/&quot;
+
+syn.ref = {
+	primes = {
+		sulphur = {&quot;tin&quot;, &quot;copper&quot;},
+		salt = {&quot;lead&quot;,&quot;iron&quot;},
+		mercury = {&quot;silver&quot;,&quot;gold&quot;},
+	},
+
+	environments = {
+		&quot;Natural underground&quot;,
+		&quot;Constructed underground&quot;,
+		&quot;Mountains&quot;,
+	},
+
+	shorten = {
+		[&quot;pinches of powdered sulphur&quot;] = &quot;sulphur&quot;,
+		[&quot;salt crystals&quot;] = &quot;salt&quot;,
+		[&quot;drams of mercury&quot;] = &quot;mercury&quot;,
+	},
+}
+
+
+syn.f.echo = function(line)
+
+	line = &quot;&lt;dark_khaki&gt;[Extract]:&lt;reset&gt; &quot; ..line
+	moveCursorEnd(&quot;main&quot;)
+	if getCurrentLine() ~= &quot;&quot; then line = &quot;\n&quot;..line end
+	cecho(line..&quot;\n&quot;)
+
+end
+
+
+syn.f.displayLinks = function()
+
+	local room = gmcp.Room.Info.num
+	local env = gmcp.Room.Info.environment
+
+	local primes = {&quot;sulphur&quot;,&quot;salt&quot;,&quot;mercury&quot;}
+
+	if table.contains(syn.ref.environments, env) and not table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then
+		if not table.contains(syn.extracted,room) then
+			syn.extracted[room] = {0,0,0}
+		end
+
+		cecho(&quot;\n&lt;dark_khaki&gt;Primes: &quot;)
+		for idx,prime in ipairs(primes) do
+			if syn.extracted[room][idx] == 0 then
+				cmd = [[guac.queueing.queue(&quot;eqbal&quot;,&quot;add&quot;,&quot;extract ]]..prime..kln.cc..[[inr ]]..prime..[[&quot;,true)]]
+				cechoLink(&quot;&lt;dark_khaki&gt;&quot;..prime..&quot;&lt;reset&gt;&quot;,cmd,&quot;Extract &quot;..prime,true) echo(&quot; &quot;)
+			else
+				cecho(&quot;&lt;midnight_blue&gt;&quot;..prime..&quot;&lt;reset&gt; &quot;)
+			end
+		end
+	end
+end
+
+
+syn.f.isextractable = function(room)
+
+	room = room or gmcp.Room.Info.num
+
+	if not table.contains(syn.ref.environments, mmp.envidsr[getRoomEnv(room)]) then return false end
+
+	if not syn.extracted[room] then return true end
+	
+	if tonumber(syn.extracted[room][1]) == 0
+	  or tonumber(syn.extracted[room][2]) == 0
+	  or tonumber(syn.extracted[room][3]) == 0 then
+		return true
+	end
+
+	return false
+
+end
+
+
+syn.f.executeQueue = function()
+
+	local dly = 1
+	if syn.q[1] == nil then return end
+
+	if gmcp.Char.Vitals.bal == &quot;1&quot; and gmcp.Char.Vitals.eq == &quot;1&quot; then
+		send(syn.q[1],false)
+	else
+		send(&quot;queue prepend eqbal &quot;..syn.q[1],false)
+		dly = 3 -- increase timer
+	end
+	table.remove(syn.q, 1)
+	if not syn.qTimer then
+		syn.qTimer = tempTimer(1,[[
+			syn.qTimer = nil 
+			syn.f.executeQueue()
+		]])
+	end
+
+end
+
+syn.f.balanceCheck = function()
+	-- to move away from timers eventually
+end
+
+
+--registerAnonymousEventHandler(&quot;gmcp.Char.Vitals&quot;,  &quot;syn.f.balanceCheck&quot;)</script>
+            <eventHandlerList/>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+            <name>syn - list Rift</name>
+            <packageName></packageName>
+            <script>syn = syn or {}
+syn.f = syn.f or {}
+
+syn.f.listRift = function()
+
+	local d = &quot;&quot;
+	local n = &quot;&quot;
+	local a = 0
+
+	syn.riftTemp = gmcp.IRE.Rift.List
+	syn.rift = {}
+
+	for k, v in pairs(syn.riftTemp) do
+		syn.rift[syn.riftTemp[k].name] = tonumber(syn.riftTemp[k].amount)	
+	end
+	
+end
+
+
+syn.f.enqueue = function(num,metal)
+
+	-- check we have enough primes
+
+end
+
+--registerAnonymousEventHandler(&quot;gmcp.IRE.Rift&quot;, &quot;syn.f.listRift&quot;)</script>
+            <eventHandlerList/>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+            <name>syn - room walker</name>
+            <packageName></packageName>
+            <script>syn = syn or {}
+syn.f = syn.f or {}
+syn.rw = syn.rw or {}
+
+kln = kln or {}
+local cc = kln.cc or &quot;/&quot;
+
+syn.area = syn.area or mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
+
+syn.rw.survey = function(room)
+
+	room = room or gmcp.Room.Info.num
+	syn.rooms = {}
+	syn.area = mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
+
+	for idx,rm in ipairs(getAreaRooms(getRoomArea(room))) do
+		if syn.f.isextractable(rm) then
+			table.insert(syn.rooms,rm)
+		end
+	end
+
+	syn.f.echo(#syn.rooms..&quot; rooms not fully extracted found in &quot;..syn.area)
+
+end
+
+
+syn.rw.walk = function(room)
+
+	room = room or gmcp.Room.Info.num
+
+	if not (syn.area == mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])) or #syn.rooms == 0 then
+		syn.rw.survey(room)
+	end
+
+	if syn.rooms[1] then
+		--do the walky walk
+		if kln.dash then gui.toggler(&quot;dash&quot;) end
+		syn.rw.extracting = true
+		if table.contains(syn.rooms,room) then
+			table.remove(syn.rooms,table.index_of(syn.rooms,room))
+			if syn.f.isextractable(room) then
+				raiseEvent(&quot;mmapper arrived&quot;)
+			end
+		else
+			mmp.gotoRoom(syn.rooms[1])
+		end
+		
+	else
+		syn.rw.extracting = false
+		syn.f.echo(&quot;Area fully extracted!&quot;)
+	end
+
+end
+
+
+syn.rw.stop = function()
+
+	--mmp.stop()
+	syn.rw.timer = nil
+	syn.rw.extracting = false
+
+end
+
+
+syn.rw.enteredroom = function() -- remove rooms as they're passed through, don't wait until they're the destination
+
+	local room = gmcp.Room.Info.num
+
+	if not syn.rw.extracting then return end
+	if mmp.autowalking then return end
+	if svo then if svo.me.doqueue.repeating then return end end
+	if TReX then if TReX.queue.dorAction then return end end
+
+	if syn.f.isextractable(room) then
+		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here
+			if table.contains(syn.rooms,room) then table.remove(syn.rooms,table.index_of(syn.rooms,room)) end
+		else
+			mmp.stop()
+			if not table.contains(syn.extracted,room) then syn.extracted[room] = {0,0,0} end
+			if tonumber(syn.extracted[room][1]) == 0 then table.insert(syn.q,&quot;extract sulphur&quot;..cc..&quot;inr sulphur&quot;) end
+			if tonumber(syn.extracted[room][2]) == 0 then table.insert(syn.q,&quot;extract salt&quot;..cc..&quot;inr salt&quot;) end
+	  		if tonumber(syn.extracted[room][3]) == 0 then table.insert(syn.q,&quot;extract mercury&quot;..cc..&quot;inr mercury&quot;) end
+			if svo then -- use svo's do queue
+				for _,v in ipairs(syn.q) do
+					svo.doadd(v)
+				end
+				syn.q = {}
+			else
+				syn.f.executeQueue()
+			end
+			--syn.rw.timer = tempTimer(5,[[syn.rw.walk()]])
+		end
+	end
+end
+
+
+
+syn.rw.nearest = function(room)
+
+	room = room or gmcp.Room.Info.num
+	local nearest = room
+	local dist = 100
+
+	for idx,rm in ipairs(syn.rooms) do
+		if mmp.getPath(room,rm) then -- it's possible
+			if #speedWalkPath &lt; dist then
+				dist = #speedWalkPath
+				nearest = rm
+			end
+		end
+	end
+
+	return nearest
+
+end
+
+registerAnonymousEventHandler(&quot;gmcp.Room.Info&quot;,&quot;syn.rw.enteredroom&quot;)
+registerAnonymousEventHandler(&quot;mmapper arrived&quot;,&quot;syn.rw.enteredroom&quot;)</script>
+            <eventHandlerList/>
+        </Script>
+    </ScriptPackage>
+    <KeyPackage/>
+    <HelpPackage>
+        <helpURL></helpURL>
+    </HelpPackage>
+</MudletPackage>
