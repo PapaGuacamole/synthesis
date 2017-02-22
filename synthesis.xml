@@ -118,7 +118,9 @@ syn.v.date = matches[2]</script>
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Room exits</name>
-            <script>syn.f.displayLinks()</script>
+            <script>syn = syn or {}
+syn.f = syn.f or {}
+syn.f.displayLinks()</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
@@ -246,7 +248,7 @@ else
 	syn.v.extract = not syn.v.extract
 end
 
-if not syn.v.extract then syn.rw.stop() else syn.rw.extracting = true end
+if not syn.v.extract then syn.f.stop() else syn.extracting = true end
 syn.f.echo(&quot;enabled &quot;..string.format(&quot;%s&quot;, tostring(syn.v.extract)))
 raiseEvent(&quot;guac extract toggle&quot;)</script>
             <command></command>
@@ -255,25 +257,25 @@ raiseEvent(&quot;guac extract toggle&quot;)</script>
         </Alias>
         <Alias isActive="yes" isFolder="no">
             <name>RW Stop</name>
-            <script>syn.rw.stop()</script>
+            <script>syn.f.stop()</script>
             <command></command>
             <packageName></packageName>
             <regex>^estop$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
             <name>Extract survey</name>
-            <script>syn.rw.survey()</script>
+            <script>syn.f.survey()</script>
             <command></command>
             <packageName></packageName>
             <regex>^esurvey$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
             <name>Goto next extractable room</name>
-            <script>syn.rw.survey()
+            <script>syn.f.survey()
 if not syn.rooms[1] then
 	syn.f.echo(&quot;No extractable rooms found&quot;)
 else
-	mmp.gotoRoom(syn.rw.nearest())
+	mmp.gotoRoom(syn.f.nearest())
 end</script>
             <command></command>
             <packageName></packageName>
@@ -291,9 +293,9 @@ syn.f						= syn.f or {}
 syn.v						= syn.v or {}
 syn.q						= syn.q or {}
 
-kln = kln or {}
+kln							= kln or {}
 
-syn.version = &quot;v1.1&quot;
+syn.version = &quot;v1.2&quot;
 
 local cc = kln.cc or &quot;/&quot;
 
@@ -316,6 +318,10 @@ syn.ref = {
 		[&quot;drams of mercury&quot;] = &quot;mercury&quot;,
 	},
 }
+
+if gmcp then if gmcp.Room then
+	syn.area = syn.area or mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
+end end
 
 
 syn.f.echo = function(line)
@@ -398,6 +404,120 @@ syn.f.balanceCheck = function()
 end
 
 
+-- SURVEYING AND WALKING
+syn.f.survey = function(room)
+
+	room = room or gmcp.Room.Info.num
+	syn.rooms = {}
+	syn.area = mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
+
+	for idx,rm in ipairs(getAreaRooms(getRoomArea(room))) do
+		if syn.f.isextractable(rm) then
+			table.insert(syn.rooms,rm)
+		end
+	end
+
+	syn.f.echo(#syn.rooms..&quot; rooms not fully extracted found in &quot;..syn.area)
+
+end
+
+
+-- FIND NEAREST ROOM TO CURRENT
+syn.f.nearest = function(room)
+
+	room = room or gmcp.Room.Info.num
+	local nearest = room
+	local dist = 100
+
+	for idx,rm in ipairs(syn.rooms) do
+		if mmp.getPath(room,rm) then -- it's possible
+			if #speedWalkPath &lt; dist then
+				dist = #speedWalkPath
+				nearest = rm
+			end
+		end
+	end
+
+	return nearest
+
+end
+
+
+syn.f.walk = function(room)
+
+	room = room or gmcp.Room.Info.num
+
+	if not (syn.area == mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])) or #syn.rooms == 0 then
+		syn.f.survey(room)
+	end
+
+	if syn.rooms[1] then
+		--do the walky walk
+		if kln.dash then gui.toggler(&quot;dash&quot;) end
+		syn.extracting = true
+		if table.contains(syn.rooms,room) then
+			table.remove(syn.rooms,table.index_of(syn.rooms,room))
+			if syn.f.isextractable(room) then
+				raiseEvent(&quot;mmapper arrived&quot;)
+			end
+		else
+			mmp.gotoRoom(syn.rooms[1])
+		end
+		
+	else
+		syn.extracting = false
+		syn.f.echo(&quot;Area fully extracted!&quot;)
+	end
+
+end
+
+
+syn.f.stop = function()
+
+	--mmp.stop()
+	syn.f.timer = nil
+	syn.extracting = false
+
+end
+
+-- AUTOMATICALLY EXTRACT
+syn.f.enteredroom = function() -- remove rooms as they're passed through, don't wait until they're the destination
+
+	local room = gmcp.Room.Info.num
+
+	if not syn.extracting then return end
+	if mmp.autowalking then return end
+	if svo then if svo.me.doqueue.repeating then return end end
+	if TReX then if TReX.queue.dorAction then return end end
+
+	if syn.f.isextractable(room) then
+		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here
+			if table.contains(syn.rooms,room) then table.remove(syn.rooms,table.index_of(syn.rooms,room)) end
+		else
+			mmp.stop()
+			if not table.contains(syn.extracted,room) then syn.extracted[room] = {0,0,0} end
+			if tonumber(syn.extracted[room][1]) == 0 then table.insert(syn.q,&quot;extract sulphur&quot;..cc..&quot;inr sulphur&quot;) end
+			if tonumber(syn.extracted[room][2]) == 0 then table.insert(syn.q,&quot;extract salt&quot;..cc..&quot;inr salt&quot;) end
+	  		if tonumber(syn.extracted[room][3]) == 0 then table.insert(syn.q,&quot;extract mercury&quot;..cc..&quot;inr mercury&quot;) end
+			if svo then -- use svo's do queue
+				for _,v in ipairs(syn.q) do
+					svo.doadd(v)
+				end
+				syn.q = {}
+			else
+				syn.f.executeQueue()
+			end
+			--syn.f.timer = tempTimer(5,[[syn.rw.walk()]])
+		end
+	end
+end
+
+
+
+
+
+registerAnonymousEventHandler(&quot;gmcp.Room.Info&quot;,&quot;syn.f.enteredroom&quot;)
+registerAnonymousEventHandler(&quot;mmapper arrived&quot;,&quot;syn.f.enteredroom&quot;)
 --registerAnonymousEventHandler(&quot;gmcp.Char.Vitals&quot;,  &quot;syn.f.balanceCheck&quot;)</script>
             <eventHandlerList/>
         </Script>
@@ -430,129 +550,6 @@ syn.f.enqueue = function(num,metal)
 end
 
 --registerAnonymousEventHandler(&quot;gmcp.IRE.Rift&quot;, &quot;syn.f.listRift&quot;)</script>
-            <eventHandlerList/>
-        </Script>
-        <Script isActive="yes" isFolder="no">
-            <name>syn - room walker</name>
-            <packageName></packageName>
-            <script>syn = syn or {}
-syn.f = syn.f or {}
-syn.rw = syn.rw or {}
-
-kln = kln or {}
-local cc = kln.cc or &quot;/&quot;
-
-syn.area = syn.area or mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
-
-syn.rw.survey = function(room)
-
-	room = room or gmcp.Room.Info.num
-	syn.rooms = {}
-	syn.area = mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])
-
-	for idx,rm in ipairs(getAreaRooms(getRoomArea(room))) do
-		if syn.f.isextractable(rm) then
-			table.insert(syn.rooms,rm)
-		end
-	end
-
-	syn.f.echo(#syn.rooms..&quot; rooms not fully extracted found in &quot;..syn.area)
-
-end
-
-
-syn.rw.walk = function(room)
-
-	room = room or gmcp.Room.Info.num
-
-	if not (syn.area == mmp.cleanAreaName(mmp.areatabler[getRoomArea(gmcp.Room.Info.num)])) or #syn.rooms == 0 then
-		syn.rw.survey(room)
-	end
-
-	if syn.rooms[1] then
-		--do the walky walk
-		if kln.dash then gui.toggler(&quot;dash&quot;) end
-		syn.rw.extracting = true
-		if table.contains(syn.rooms,room) then
-			table.remove(syn.rooms,table.index_of(syn.rooms,room))
-			if syn.f.isextractable(room) then
-				raiseEvent(&quot;mmapper arrived&quot;)
-			end
-		else
-			mmp.gotoRoom(syn.rooms[1])
-		end
-		
-	else
-		syn.rw.extracting = false
-		syn.f.echo(&quot;Area fully extracted!&quot;)
-	end
-
-end
-
-
-syn.rw.stop = function()
-
-	--mmp.stop()
-	syn.rw.timer = nil
-	syn.rw.extracting = false
-
-end
-
-
-syn.rw.enteredroom = function() -- remove rooms as they're passed through, don't wait until they're the destination
-
-	local room = gmcp.Room.Info.num
-
-	if not syn.rw.extracting then return end
-	if mmp.autowalking then return end
-	if svo then if svo.me.doqueue.repeating then return end end
-	if TReX then if TReX.queue.dorAction then return end end
-
-	if syn.f.isextractable(room) then
-		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here
-			if table.contains(syn.rooms,room) then table.remove(syn.rooms,table.index_of(syn.rooms,room)) end
-		else
-			mmp.stop()
-			if not table.contains(syn.extracted,room) then syn.extracted[room] = {0,0,0} end
-			if tonumber(syn.extracted[room][1]) == 0 then table.insert(syn.q,&quot;extract sulphur&quot;..cc..&quot;inr sulphur&quot;) end
-			if tonumber(syn.extracted[room][2]) == 0 then table.insert(syn.q,&quot;extract salt&quot;..cc..&quot;inr salt&quot;) end
-	  		if tonumber(syn.extracted[room][3]) == 0 then table.insert(syn.q,&quot;extract mercury&quot;..cc..&quot;inr mercury&quot;) end
-			if svo then -- use svo's do queue
-				for _,v in ipairs(syn.q) do
-					svo.doadd(v)
-				end
-				syn.q = {}
-			else
-				syn.f.executeQueue()
-			end
-			--syn.rw.timer = tempTimer(5,[[syn.rw.walk()]])
-		end
-	end
-end
-
-
-
-syn.rw.nearest = function(room)
-
-	room = room or gmcp.Room.Info.num
-	local nearest = room
-	local dist = 100
-
-	for idx,rm in ipairs(syn.rooms) do
-		if mmp.getPath(room,rm) then -- it's possible
-			if #speedWalkPath &lt; dist then
-				dist = #speedWalkPath
-				nearest = rm
-			end
-		end
-	end
-
-	return nearest
-
-end
-
-registerAnonymousEventHandler(&quot;gmcp.Room.Info&quot;,&quot;syn.rw.enteredroom&quot;)
-registerAnonymousEventHandler(&quot;mmapper arrived&quot;,&quot;syn.rw.enteredroom&quot;)</script>
             <eventHandlerList/>
         </Script>
     </ScriptPackage>
