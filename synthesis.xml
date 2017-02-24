@@ -234,6 +234,82 @@ syn.f.echo(&quot;Extracted 1 &quot;..mineral)
                 <integer>3</integer>
             </regexCodePropertyList>
         </Trigger>
+        <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Bulk Processing</name>
+            <script></script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList/>
+            <regexCodePropertyList/>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Store</name>
+                <script></script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>^You store (\d+) (.+)\, bringing the total in the rift to (\d+)\.$</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>1</integer>
+                </regexCodePropertyList>
+            </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Remove</name>
+                <script></script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>^You remove (\d+) (.+)\, bringing the total in the Rift to (\d+)\.$</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>1</integer>
+                </regexCodePropertyList>
+            </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Synthesise</name>
+                <script>-- matches[2] = sulphur / salt / mercury</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>^With careful measurements\, you react (\w+) with a series of solvents and powders to synthesise a group of (\d+) (.+)\.$</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>1</integer>
+                </regexCodePropertyList>
+            </Trigger>
+        </TriggerGroup>
     </TriggerPackage>
     <TimerPackage/>
     <AliasPackage>
@@ -311,9 +387,11 @@ syn.q						= syn.q or {}
 
 kln							= kln or {}
 
-syn.version = &quot;v1.2&quot;
+syn.version = &quot;v1.3&quot;
 
 local cc = kln.cc or &quot;/&quot;
+
+syn.v.extract = syn.v.extract or {}
 
 syn.ref = {
 	primes = {
@@ -332,12 +410,42 @@ syn.ref = {
 		[&quot;pinches of powdered sulphur&quot;] = &quot;sulphur&quot;,
 		[&quot;salt crystals&quot;] = &quot;salt&quot;,
 		[&quot;drams of mercury&quot;] = &quot;mercury&quot;,
+		[&quot;chunks of lead&quot;] = &quot;lead&quot;,
+		[&quot;chunks of iron&quot;] = &quot;iron&quot;,
+		[&quot;chunks of tin&quot;] = &quot;tin&quot;,
+		[&quot;chunks of copper&quot;] = &quot;copper&quot;,
+		[&quot;chunks of silver&quot;] = &quot;silver&quot;,
+		[&quot;nuggets of gold&quot;] = &quot;gold&quot;,
 	},
 
-	shops = syn.ref.shops or {
+	list = {
+		antimony  = {&quot;1 salt&quot;, &quot;1 lead&quot;, &quot;1 silver&quot;},
+		argentum  = {&quot;1 salt&quot;, &quot;2 silver&quot;},
+		arsenic  = {&quot;1 salt&quot;, &quot;1 tin&quot;, &quot;1 lead&quot;},
+		aurum  = {&quot;1 sulphur&quot;, &quot;2 gold&quot;},
+		azurite  = {&quot;1 sulphur&quot;, &quot;2 copper&quot;},
+		bisemutum  = {&quot;1 sulphur&quot;, &quot;1 tin&quot;, &quot;1 iron&quot;},
+		calamine  = {&quot;1 sulphur&quot;, &quot;1 iron&quot;, &quot;1 gold&quot;},
+		calcite  = {&quot;1 salt&quot;, &quot;1 copper&quot;, &quot;1 iron&quot;},
+		cinnabar  = {&quot;2 sulphur&quot;, &quot;2 mercury&quot;},
+		cuprum  = {&quot;1 salt&quot;, &quot;2 copper&quot;},
+		dolomite  = {&quot;1 salt&quot;, &quot;1 lead&quot;, &quot;1 iron&quot;},
+		ferrum  = {&quot;1 sulphur&quot;, &quot;2 iron&quot;},
+		gypsum  = {&quot;1 sulphur&quot;, &quot;1 iron&quot;, &quot;1 silver&quot;},
+		magnesium  = {&quot;1 sulphur&quot;, &quot;1 tin&quot;, &quot;1 silver&quot;},
+		malachite  = {&quot;2 salt&quot;, &quot;2 copper&quot;},
+		plumbum  = {&quot;1 sulphur&quot;, &quot;2 lead&quot;},
+		potash  = {&quot;1 sulphur&quot;, &quot;1 silver&quot;, &quot;1 gold&quot;},
+		quartz  = {&quot;1 salt&quot;, &quot;1 tin&quot;, &quot;1 gold&quot;},
+		quicksilver  = {&quot;2 mercury&quot;, &quot;1 silver&quot;},
+		realgar  = {&quot;2 sulphur&quot;, &quot;2 tin&quot;},
+		stannum  = {&quot;1 salt&quot;, &quot;2 tin&quot;},
+	},
+}
+
+syn.ref.shops = syn.ref.shops or {
 		-- contains room ids of known shops in otherwise extractable environments
 		-- loaded using syn.f.load()
-	},
 }
 
 if gmcp then if gmcp.Room then
@@ -360,16 +468,20 @@ syn.f.displayLinks = function()
 	local room = gmcp.Room.Info.num
 	local env = gmcp.Room.Info.environment
 
+	local str = &quot;Shop, can't extract&quot;
 	local primes = {&quot;sulphur&quot;,&quot;salt&quot;,&quot;mercury&quot;}
 
 	if table.contains(syn.ref.environments, env) then
 		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then
-			syn.f.echo(&quot;Shop, can't extract - added to shoplist&quot;)
+			if #syn.ref.shops == 0 then syn.f.load(true) end
 			if not table.contains(syn.ref.shops,room) then
+				str = str..&quot; - added to shop list&quot;
 				table.insert(syn.ref.shops,room)
 				table.sort(syn.ref.shops)
 				syn.f.save()
 			end
+			syn.f.echo(str)
+			return
 		elseif not table.contains(syn.extracted,room) then
 			syn.extracted[room] = {0,0,0, syn.area}
 		end
@@ -515,6 +627,7 @@ end
 syn.f.enteredroom = function() -- remove rooms as they're passed through, don't wait until they're the destination
 
 	local room = gmcp.Room.Info.num
+	local str = &quot;Shop, can't extract&quot;
 
 	if not syn.extracting then return end
 	if mmp.autowalking then return end
@@ -522,13 +635,15 @@ syn.f.enteredroom = function() -- remove rooms as they're passed through, don't 
 	if TReX then if TReX.queue.dorAction then return end end
 
 	if syn.f.isextractable(room) then
-		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here, mark as extracted
-			syn.f.echo(&quot;Shop, can't extract - added to shoplist&quot;)
+		if table.contains(gmcp.Room.Info.details,&quot;shop&quot;) then --can't extract here, mark as extracted.
+			if #syn.ref.shops == 0 then syn.f.load(true) end
 			if not table.contains(syn.ref.shops,room) then
+				str = str..&quot; - added to shoplist&quot;
 				table.insert(syn.ref.shops,room)
 				table.sort(syn.ref.shops)
 				syn.f.save()
 			end
+			syn.f.echo(str)
 			if table.contains(syn.rooms,room) then table.remove(syn.rooms,table.index_of(syn.rooms,room)) end
 			
 		else
@@ -564,19 +679,24 @@ syn.f.save = function()
 	
 end
 
-syn.f.load = function()
+syn.f.load = function(silent)
 
 	local tbl = getMudletHomeDir().._sep_..&quot;synshops.lua&quot;
 	if io.exists(tbl) then
 		local tmp = {}
 		table.load(tbl,tmp)
 		syn.ref.shops = table.deepcopy (tmp)
-		syn.f.echo(&quot;Shop table loaded successfully&quot;)
+		if not silent then syn.f.echo(&quot;Shop table loaded successfully&quot;) end
 	else
-		syn.f.echo(&quot;synshops.lua not found in profile folder&quot;)
+		if not silent then syn.f.echo(&quot;synshops.lua not found in profile folder&quot;) end
 	end
 
 end
+
+
+-- reload table every time script is saved
+syn.f.load(true)
+
 
 
 registerAnonymousEventHandler(&quot;gmcp.Room.Info&quot;,&quot;syn.f.enteredroom&quot;)
@@ -585,10 +705,13 @@ registerAnonymousEventHandler(&quot;mmapper arrived&quot;,&quot;syn.f.enteredroo
             <eventHandlerList/>
         </Script>
         <Script isActive="yes" isFolder="no">
-            <name>syn - list Rift</name>
+            <name>Synthesis - Processing</name>
             <packageName></packageName>
-            <script>syn = syn or {}
-syn.f = syn.f or {}
+            <script>-- SYNTHESIS - Processing
+syn							= syn or {}
+syn.f						= syn.f or {}
+
+local cc = kln.cc or &quot;/&quot;
 
 syn.f.listRift = function()
 
@@ -608,7 +731,28 @@ end
 
 syn.f.enqueue = function(num,metal)
 
-	-- check we have enough primes
+	-- check we have enough primes - 1 prime makes 2 metals
+
+end
+
+
+syn.f.buildCommand = function(mineral)
+
+	local cmds = {&quot;inr &quot;..mineral}
+
+	for _, v in ipairs(syn.ref.list[mineral]) do
+		table.insert(cmds,#cmds+1,&quot;outr &quot;..string.format(&quot;%d&quot;,v:match(&quot;(%d+)&quot;))..&quot; a&quot;..string.format(&quot;%s&quot;,v:match(&quot;(%a+)&quot;)))
+	end
+
+	table.insert(cmds,#cmds+1,&quot;transmutate &quot;..mineral)
+	return table.concat(cmds,&quot;/&quot;) -- serverside queue always uses forwardslash
+
+end
+
+
+syn.f.redefineAlias = function(mineral)
+
+	send(&quot;SETALIAS SYNPROCESS &quot;..syn.f.buildCommand(mineral),true)
 
 end
 
@@ -616,17 +760,24 @@ end
             <eventHandlerList/>
         </Script>
         <Script isActive="no" isFolder="no">
-            <name>Changelog</name>
+            <name>Synthesis - Changelog</name>
             <packageName></packageName>
             <script>--[[ synthesis changelog
 
+v1.3
+- fixed issue with syn.ref.shops being recursive
+- fixed issue with re-entering a previously logged shop resetting syn.ref.shops
+- began work on bulk processing scripts
+
 v1.2
+- added changelog
 - added in shop detection and marking to syn.f.enteredroom
 - syn.area added as fourth argument to syn.extracted[room] for statistic gathering
 - created syn.ref.shops to be populated with known shops
 - added syn.f.load and syn.f.save to allow syn.ref.shops to persist through sessions
 - syn.f.load() automatically called if syn.ref.shops is empty
 - syn.f.save() automatically called when a new entry is made to the table
+- added esave and eload aliases
 
 v1.1
 - rearranged scripts
